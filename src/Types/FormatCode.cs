@@ -17,7 +17,8 @@
 
 namespace Amqp.Types
 {
-    static class FormatCode
+#pragma warning disable 1591
+    public static class FormatCode
     {
         public const byte
         
@@ -68,4 +69,5 @@ namespace Amqp.Types
         Array8 = 0xe0,
         Array32 = 0xf0;
     }
+#pragma warning restore 1591
 }
