@@ -310,6 +310,7 @@ namespace Amqp.Listener
             }
             catch (AmqpException amqpException)
             {
+                Trace.WriteLine(TraceLevel.Error, "AMQP Exception occurred attaching link: {0}", amqpException);
                 error = amqpException.Error;
             }
             catch (Exception exception)

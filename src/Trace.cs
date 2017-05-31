@@ -23,7 +23,7 @@ namespace Amqp
     /// Defines the traces levels. Except Frame, levels are forward inclusive.
     /// For example, Information level includes the Error and Warning levels.
     /// </summary>
-    public enum TraceLevel
+    public enum TraceLevel : byte
     {
         /// <summary>
         /// Specifies that error events should be traced.

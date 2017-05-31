@@ -188,7 +188,7 @@ namespace Amqp.Listener
         {
             if (this.linkProcessor != null)
             {
-                throw new AmqpException(ErrorCode.NotAllowed, this.linkProcessor.GetType().Name + " already registered");
+                throw new AmqpException(ErrorCode.NotAllowed, this.linkProcessor.GetType().Name + " already linked for processing");
             }
 
             this.linkProcessor = linkProcessor;
@@ -257,9 +257,9 @@ namespace Amqp.Listener
         /// Unregisters a request processor at the specified address.
         /// </summary>
         /// <param name="address">The address.</param>
-        public void UnregisterRequestProcessor(string address)
+        public bool UnregisterRequestProcessor(string address)
         {
-            RemoveProcessor(this.requestProcessors, address);
+            return RemoveProcessor(this.requestProcessors, address);
         }
 
         /// <summary>
@@ -303,27 +303,40 @@ namespace Amqp.Listener
             {
                 if (processors.ContainsKey(address))
                 {
-                    throw new AmqpException(ErrorCode.NotAllowed, typeof(T).Name + " already registered");
+                    T temp = processors[address];
+                    if (processor.Equals(temp))
+                    {
+                        Trace.TraceWarning($"Multiple requests for adding processor \"{address}\" [{typeof(T).Name}]");
+                    }
+                    else
+                    {
+                        throw new AmqpException(ErrorCode.NotAllowed, typeof(T).Name + " already registered");
+                    }
                 }
-
-                processors[address] = processor;
+                else
+                {
+                    processors[address] = processor;
+                }
             }
         }
 
-        static void RemoveProcessor<T>(Dictionary<string, T> processors, string address)
+        static bool RemoveProcessor<T>(Dictionary<string, T> processors, string address)
         {
+            bool ret = false;
             lock (processors)
             {
                 T processor;
                 if (processors.TryGetValue(address, out processor))
                 {
                     processors.Remove(address);
+                    ret = true;
                     if (processor is IDisposable)
                     {
                         ((IDisposable)processor).Dispose();
                     }
                 }
             }
+            return ret;
         }
 
         static bool TryGetProcessor<T>(Dictionary<string, T> processors, string address, out T processor)

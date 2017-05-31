@@ -20,7 +20,7 @@ namespace Amqp.Types
     /// <summary>
     /// The FormatCode class defines the AMQP type format codes.
     /// </summary>
-    static class FormatCode
+    public static class FormatCode
     {
         public const byte
         
