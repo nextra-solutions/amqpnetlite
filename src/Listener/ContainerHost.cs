@@ -257,9 +257,12 @@ namespace Amqp.Listener
         /// Unregisters a request processor at the specified address.
         /// </summary>
         /// <param name="address">The address.</param>
-        public bool UnregisterRequestProcessor(string address)
+        public void UnregisterRequestProcessor(string address)
         {
-            return RemoveProcessor(this.requestProcessors, address);
+            if (!RemoveProcessor(this.requestProcessors, address))
+            {
+                throw new AmqpException(ErrorCode.NotFound, $"The requestProcessor \"{address}\" was not registered");
+            }
         }
 
         /// <summary>
