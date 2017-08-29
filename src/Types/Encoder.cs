@@ -229,6 +229,14 @@ namespace Amqp.Types
                     Encoder = delegate(ByteBuffer b, object o, bool s) { WriteArray(b, (Array)o); },
                     Decoder = delegate(ByteBuffer b, byte c) { return ReadArray(b, c); }
                 },
+                // 21: decimal
+                new Serializer()
+                {
+                    Type = typeof(decimal),
+                    Encoder = delegate(ByteBuffer b, object o, bool s) { WriteDecimal(b, (decimal)o); },
+                    Decoder = delegate(ByteBuffer b, byte c) { return ReadDecimal(b, c); }
+
+                },
                 // 21: invalid
                 null
             };
@@ -257,6 +265,7 @@ namespace Amqp.Types
 #if !NETMF_LITE
                 { typeof(Fields),   serializers[19] },
 #endif
+                { typeof(decimal),  serializers[21] },
             };
 
             codecIndexTable = new byte[][]
@@ -276,8 +285,8 @@ namespace Amqp.Types
                 // 0x80:ulong, 0x81:long, 0x82:double, 0x83:timestamp, 0x84:decimal64
                 new byte[] { 5, 9, 11, 13 },
 
-                // 0x98:uuid
-                new byte[] { 21, 21, 21, 21, 21, 21, 21, 21, 14 },
+                // 0x90:-, 0x91:-, 0x92:-, 0x93:-, 0x94:decimal128, 0x95:-, 0x96:-, 0x97:-, 0x98:uuid
+                new byte[] { 22, 22, 22, 22, 21, 22, 22, 22, 14 },
             
                 // 0xa0:bin8, 0xa1:str8, 0xa3:sym8
                 new byte[] { 15, 16, 21, 17 },
@@ -588,6 +597,12 @@ namespace Amqp.Types
         {
             AmqpBitConverter.WriteUByte(buffer, FormatCode.Double);
             AmqpBitConverter.WriteDouble(buffer, value);
+        }
+
+        public static void WriteDecimal(ByteBuffer buffer, decimal value)
+        {
+            AmqpBitConverter.WriteUByte(buffer, FormatCode.Decimal128);
+            AmqpBitConverter.WriteDecimal128(buffer, value);
         }
 
         /// <summary>
@@ -1144,6 +1159,18 @@ namespace Amqp.Types
             if (formatCode == FormatCode.Double)
             {
                 return AmqpBitConverter.ReadDouble(buffer);
+            }
+            else
+            {
+                throw InvalidFormatCodeException(formatCode, buffer.Offset);
+            }
+        }
+
+        public static decimal ReadDecimal(ByteBuffer buffer, byte formatCode)
+        {
+            if (formatCode == FormatCode.Decimal128)
+            {
+                return AmqpBitConverter.ReadDecimal128(buffer);
             }
             else
             {

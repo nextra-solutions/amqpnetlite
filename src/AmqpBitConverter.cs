@@ -161,6 +161,15 @@ namespace Amqp
             return *((double*)&data);
         }
 
+        public static unsafe decimal ReadDecimal128(ByteBuffer buffer)
+        {
+            decimal data = new decimal();
+            long* n = ((long*)&data);
+            n[0] = ReadLong(buffer);
+            n[1] = ReadLong(buffer);
+            return data;
+        }
+
         /// <summary>
         /// Reads a uuid (16-bytes) from the buffer and advance the buffer read cursor.
         /// </summary>
@@ -331,6 +340,13 @@ namespace Amqp
         {
             long n = *((long*)&data);
             WriteLong(buffer, n);
+        }
+
+        public static unsafe void WriteDecimal128(ByteBuffer buffer, decimal data)
+        {
+            long* n = ((long*)&data);
+            WriteLong(buffer, n[0]);
+            WriteLong(buffer, n[1]);
         }
 
         /// <summary>
